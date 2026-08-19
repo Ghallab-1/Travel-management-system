@@ -1,0 +1,23 @@
+[
+  {
+    "id": "user-1",
+    "fullName": "Ghallab1",
+    "email": "",
+    "role": "Employee",
+    "department": "Engineering"
+  },
+  {
+    "id": "user-2",
+    "fullName": "Ghallab2",
+    "email": "",
+    "role": "Direct Manager",
+    "department": "Sales"
+  },
+  {
+    "id": "user-3",
+    "fullName": "Ghallab3",
+    "email": "",
+    "role": "Employee",
+    "department": "Engineering"
+  }
+]

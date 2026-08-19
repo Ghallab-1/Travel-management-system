@@ -1,0 +1,4 @@
+[
+  { "id": "b-1", "requestId": "req-1", "type": "Flight", "provider": "EgyptAir", "status": "Confirmed" },
+  { "id": "b-2", "requestId": "req-2", "type": "Hotel", "provider": "Marina Hotel", "status": "Pending" }
+]

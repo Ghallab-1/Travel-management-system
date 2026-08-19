@@ -1,0 +1,194 @@
+/* Global beginner-friendly styles for the TMS frontend prototype (improved look) */
+:root{
+  --primary: #2463d6;
+  --accent: #0ea5a4;
+  --bg: #cfeffd; /* soft sky blue */
+  --muted: #6b6f76;
+  --card: #ffffff;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --glass: rgba(255,255,255,0.7);
+}
+
+*{box-sizing:border-box}
+body {
+  background: linear-gradient(180deg, var(--bg), #e6f7ff);
+  color: #0f1724;
+  margin: 0;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+/* Top navigation */
+nav {
+  background: var(--card);
+  padding: 14px 20px;
+  border-bottom: 1px solid #e6eef9;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(16,24,40,0.06);
+  position: sticky; top: 0; z-index: 50;
+}
+nav img { height:32px }
+nav .logo {
+  font-weight: 800;
+  color: var(--primary);
+  font-size: 18px;
+  padding-right: 14px;
+  border-right: 1px solid #f1f5f9;
+  margin-left: 12px;
+}
+
+nav a, nav button {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  padding: 8px 12px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 8px;
+}
+nav a:hover, nav button:hover { background: rgba(36,99,214,0.05) }
+nav .nav-right { margin-left: auto; display:flex; align-items:center; gap:14px }
+
+/* Sidebar layout and style */
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: var(--card); /* same as top nav */
+  border-right: 1px solid #e6eef9; /* match top nav hairline */
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 12px 18px 12px;
+}
+
+.sidebar-nav { display:flex; flex-direction:column; gap:18px; padding-top:8px; align-items: stretch }
+.sidebar-link, .sidebar a { background: transparent !important; box-shadow: none !important; border: none !important; }
+.sidebar-link { display:flex; align-items:center; gap:12px; color: #263544; text-decoration:none; padding:10px 12px; border-radius:8px; font-weight:600; font-size:15px; min-height:44px; position:relative; }
+.sidebar-link .sidebar-icon { color: #263544; display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; flex:0 0 24px }
+.sidebar-link:hover { background: rgba(9,30,66,0.03); color:var(--primary) }
+/* Make active style subtle and not boxed */
+.sidebar-link.active { background: transparent; color: var(--primary); }
+.sidebar-link.active::before { content: ''; position: absolute; left: 12px; top: 10px; bottom: 10px; width: 4px; background: var(--primary); border-radius: 3px }
+
+/* Page container */
+.container {
+  max-width: 1160px;
+  margin: 24px auto;
+  background: var(--card);
+  padding: 22px;
+  border-radius: 12px;
+  box-shadow: 0 8px 48px rgba(45, 53, 69, 0.06);
+}
+
+main { padding: 20px }
+.header-row { display:flex; align-items:center; justify-content:space-between }
+h2 { margin: 0 0 8px 0; font-size: 20px }
+.small-muted { color: var(--muted); font-size: 0.9rem }
+
+/* Grid & cards */
+.grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 16px }
+.card { padding: 18px; border-radius: 10px; background: linear-gradient(180deg,#fff,#fbfdff); border: 1px solid #eef6ff }
+.card h3 { margin:0 0 8px 0 }
+.card .big { font-size: 24px; font-weight:700 }
+
+/* Form elements */
+label { display:block; font-weight:600; margin:6px 0 6px }
+input[type="text"], input[type="email"], input[type="date"], select, textarea {
+  width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6eef9; background:#fbfdff;
+}
+
+button.primary { background: linear-gradient(90deg,var(--primary), #1f6ed7); color:#fff; border:none; padding:10px 16px; border-radius:10px; cursor:pointer; box-shadow: 0 6px 18px rgba(36,99,214,0.12); font-weight:700 }
+button.primary:disabled{ opacity:0.7; cursor:default }
+button.ghost { background:transparent; border:1px solid #e6eef9; padding:8px 12px; border-radius:8px }
+
+/* Table styles */
+table{ width:100%; border-collapse:collapse; background:transparent }
+thead th{ text-align:left; padding:12px 8px; color:#334155; border-bottom:1px solid #eef3fb }
+tbody td{ padding:14px 8px; border-bottom:1px solid #f5f8ff }
+tbody tr:hover{ background: #fbfdff }
+
+/* Badges */
+.badge{ display:inline-block; padding:6px 10px; border-radius:999px; font-weight:700; font-size:0.85rem; color:#fff }
+.badge.approved{ background: var(--success) }
+.badge.submitted{ background: var(--primary) }
+.badge.draft{ background:#94a3b8 }
+.badge.rejected{ background: var(--danger) }
+
+/* Avatar */
+.avatar { width:36px; height:36px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; font-weight:700; color:var(--primary); background:#eef6ff }
+
+/* Utilities */
+.row-actions button{ margin-right:8px }
+.empty { color:var(--muted); padding:18px; text-align:center }
+
+/* Decorative background blobs */
+.bg-blob-1, .bg-blob-2 {
+  position: fixed; pointer-events: none; z-index: 0; filter: blur(40px); opacity: 0.28;
+}
+.bg-blob-1 {
+  left: -120px; top: -80px; width: 480px; height: 480px;
+  background: radial-gradient(circle at 30% 30%, rgba(36,99,214,0.22), transparent 35%);
+}
+.bg-blob-2 {
+  right: -160px; bottom: -120px; width: 560px; height: 560px;
+  background: radial-gradient(circle at 70% 70%, rgba(14,165,164,0.16), transparent 40%);
+}
+
+/* Ensure content is above blobs */
+.container, main, nav { position: relative; z-index: 2 }
+
+/* Centered login page */
+.centered-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(180deg, var(--bg), #e6f7ff);
+}
+.login-card {
+  width: 420px;
+  max-width: calc(100% - 40px);
+  background: var(--card);
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(15,23,42,0.08);
+}
+.login-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; justify-content:center }
+.login-header img { width:40px; height:40px }
+.login-title { font-weight:800; color:var(--primary); font-size:18px }
+.login-card { text-align: center }
+.login-card form { display:flex; flex-direction:column; align-items:center }
+.login-card label { text-align:center; width:100%; max-width:320px; margin:0 auto; display:block }
+.login-card input { max-width:320px; width:100%; margin-top:6px }
+.login-actions { margin-top: 18px; display:flex; justify-content:center }
+.login-actions .primary { padding: 10px 18px }
+
+
+/* Responsive */
+@media (max-width:1000px){ .grid{ grid-template-columns: repeat(2,1fr) } }
+@media (max-width:700px){ .grid{ grid-template-columns: 1fr } nav .logo{ display:none } nav a{ padding:8px } aside{ display:none } .container{ margin:12px } }
+
+/* Remove any inner boxed wrapper inside sidebar */
+.sidebar .sidebar-inner,
+.sidebar .card,
+.sidebar .container,
+.sidebar nav,
+.sidebar .sidebar-nav {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Ensure sidebar itself keeps its background but no inner panel appears */
+.sidebar { background: linear-gradient(180deg, #ffffff, #fbfdff); box-shadow: none; }
+

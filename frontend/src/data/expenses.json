@@ -1,0 +1,4 @@
+[
+  { "id": "e-1", "userId": "user-1", "amount": 120.5, "currency": "USD", "category": "Meals", "date": "2026-09-04" },
+  { "id": "e-2", "userId": "user-3", "amount": 45.0, "currency": "USD", "category": "Taxi", "date": "2026-09-21" }
+]

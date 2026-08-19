@@ -1,0 +1,44 @@
+[
+  {
+    "id": "req-1",
+    "userId": "user-1",
+    "destination": "Cairo, Egypt",
+    "purpose": "Client meeting",
+    "project": "Project A",
+    "travelType": "Domestic",
+    "departureDate": "2026-09-01",
+    "returnDate": "2026-09-03",
+    "preferredAirline": "EgyptAir",
+    "preferredHotel": "Nile Hotel",
+    "estimatedBudget": 1200,
+    "status": "Approved"
+  },
+  {
+    "id": "req-2",
+    "userId": "user-2",
+    "destination": "Dubai, UAE",
+    "purpose": "Conference",
+    "project": "Project B",
+    "travelType": "International",
+    "departureDate": "2026-10-10",
+    "returnDate": "2026-10-15",
+    "preferredAirline": "Emirates",
+    "preferredHotel": "Marina Hotel",
+    "estimatedBudget": 3500,
+    "status": "Submitted"
+  },
+  {
+    "id": "req-3",
+    "userId": "user-3",
+    "destination": "Alexandria, Egypt",
+    "purpose": "Site visit",
+    "project": "Project C",
+    "travelType": "Domestic",
+    "departureDate": "2026-09-20",
+    "returnDate": "2026-09-21",
+    "preferredAirline": "EgyptAir",
+    "preferredHotel": "Sea View Hotel",
+    "estimatedBudget": 800,
+    "status": "Draft"
+  }
+]
