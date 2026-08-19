@@ -1,0 +1,73 @@
+# .gitignore for Travel Management System
+
+# .NET
+bin/
+obj/
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/
+
+# Rider
+.idea/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Build outputs
+build/
+dist/
+coverage/
+
+# Environment / secrets
+.env
+*.env
+.env.*
+appsettings.*.json
+**/appsettings.*.json
+**/*.secret
+secrets.json
+
+# Docker
+docker-compose.override.yml
+docker-compose.*.yml
+**/*.local
+**/docker-compose.override.yml
+**/docker-compose.*.local
+
+# WSL / Docker desktop data (do not commit VHDs)
+**/*.vhdx
+**/ext4.vhdx
+
+# Logs
+*.log
+logs/
+
+# OS files
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Misc
+*.swp
+*.pid
+*.pid.lock
+
+# Personnel / IDE
+*.iml
+*.ipr
+*.iws
+
+# Optional: exclude large folders
+frontend/build/
+
+# Keep lockfile if you prefer, otherwise it's ignored above
+# package-lock.json

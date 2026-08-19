@@ -1,0 +1,1 @@
+﻿// HealthController removed to match the simpler structure of the reference project.\r\n// For student/development simplicity we remove this diagnostic controller and rely on starting the API and checking logs.\r\n
