@@ -22,8 +22,35 @@ namespace TravelManagement.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var items = await _db.TravelRequests.ToListAsync();
-            return Ok(items);
+            var items = await _db.TravelRequests
+                .Include(t => t.DestinationCity)
+                .ToListAsync();
+
+            var result = items.Select(item => new
+            {
+                item.TravelRequestId,
+                item.UserId,
+                item.DepartmentId,
+                item.TravelPolicyId,
+                item.DestinationCityId,
+
+                destinationCityName =
+                    item.DestinationCity != null
+                        ? item.DestinationCity.CityName
+                        : null,
+
+                item.Purpose,
+                item.Project,
+                item.TravelType,
+                item.DepartureDate,
+                item.ReturnDate,
+                item.EstimatedBudget,
+                item.Status,
+                item.CurrentApprovalLevel,
+                item.CreatedDate
+            });
+
+            return Ok(result);
         }
 
         [HttpGet("pending-for-me")]
