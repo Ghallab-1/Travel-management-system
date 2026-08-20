@@ -30,7 +30,6 @@ namespace TravelManagement.API.Controllers
         [Authorize]
         public async Task<IActionResult> GetPendingForMe()
         {
-            // Only return requests whose CurrentApprovalLevel matches the caller's role level
             var roleName = User.FindFirstValue(ClaimTypes.Role);
 
             var role = await _db.Roles
@@ -62,7 +61,6 @@ namespace TravelManagement.API.Controllers
             if (item == null)
                 return NotFound();
 
-            // Shaped, non-cyclic response
             var result = new
             {
                 item.TravelRequestId,
@@ -145,10 +143,28 @@ namespace TravelManagement.API.Controllers
 
             await _db.SaveChangesAsync();
 
+            var result = new
+            {
+                request.TravelRequestId,
+                request.UserId,
+                request.DepartmentId,
+                request.TravelPolicyId,
+                request.DestinationCityId,
+                request.Purpose,
+                request.Project,
+                request.TravelType,
+                request.DepartureDate,
+                request.ReturnDate,
+                request.EstimatedBudget,
+                request.Status,
+                request.CurrentApprovalLevel,
+                request.CreatedDate
+            };
+
             return CreatedAtAction(
                 nameof(Get),
                 new { id = request.TravelRequestId },
-                request
+                result
             );
         }
 
@@ -188,7 +204,6 @@ namespace TravelManagement.API.Controllers
             return NoContent();
         }
 
-        // Inline approve endpoint
         [HttpPost("{id:int}/approve")]
         [Authorize(Policy = "ApproverOnly")]
         public async Task<IActionResult> Approve(
@@ -214,7 +229,6 @@ namespace TravelManagement.API.Controllers
             if (approver == null)
                 return BadRequest("Approver not found");
 
-            // Enforce hierarchy
             if (approver.Role.Level != request.CurrentApprovalLevel)
             {
                 return BadRequest(
@@ -236,7 +250,6 @@ namespace TravelManagement.API.Controllers
 
             _db.TravelApprovals.Add(approval);
 
-            // Travel Coordinator = level 4
             const int finalLevel = 4;
 
             if (request.CurrentApprovalLevel >= finalLevel)
@@ -255,8 +268,17 @@ namespace TravelManagement.API.Controllers
 
             return CreatedAtAction(
                 nameof(Get),
-                new { id = approval.TravelApprovalId },
-                approval
+                new { id = request.TravelRequestId },
+                new
+                {
+                    approval.TravelApprovalId,
+                    approval.TravelRequestId,
+                    approval.ApproverId,
+                    approval.ApprovalLevel,
+                    approval.Decision,
+                    approval.Comments,
+                    approval.ActionDate
+                }
             );
         }
 
@@ -285,7 +307,6 @@ namespace TravelManagement.API.Controllers
             if (approver == null)
                 return BadRequest("Approver not found");
 
-            // Enforce hierarchy
             if (approver.Role.Level != request.CurrentApprovalLevel)
             {
                 return BadRequest(
@@ -307,7 +328,6 @@ namespace TravelManagement.API.Controllers
 
             _db.TravelApprovals.Add(approval);
 
-            // Rejection ends the chain
             request.Status = "Rejected";
 
             _db.Entry(request).State = EntityState.Modified;
