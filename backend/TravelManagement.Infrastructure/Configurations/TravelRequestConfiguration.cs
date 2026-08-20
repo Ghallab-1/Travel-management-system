@@ -30,6 +30,9 @@ public class TravelRequestConfiguration : IEntityTypeConfiguration<TravelRequest
             .IsRequired()
             .HasMaxLength(50);
 
+        builder.Property(tr => tr.CurrentApprovalLevel)      // Added
+            .HasDefaultValue(2);
+
         builder.Property(tr => tr.CreatedDate)
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 

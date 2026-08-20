@@ -12,7 +12,7 @@ Start-Sleep -Seconds 20
 Invoke-RestMethod -Uri http://localhost:5000/health
 
 ## Test login:
-$body = @{ email = "demo@company.com"; password = "Password123!" } | ConvertTo-Json
+$body = @{ email = "employee@company.com"; password = "Password123!" } | ConvertTo-Json
 $resp = Invoke-RestMethod -Method Post -Uri http://localhost:5000/api/auth/login -ContentType "application/json" -Body $body
 $resp.token
 
@@ -20,3 +20,13 @@ $resp.token
 ## In a NEW PowerShell window, start the frontend:
 Set-Location -Path "F:\Tasks\Travel-Management-System-Task\frontend"
 npm start
+
+
+## Users
+Employee	employee@company.com	Password123!
+
+Direct Manager	directmanager@company.com	Password123!
+
+Department Manager	deptmanager@company.com	Password123!
+
+Travel Coordinator	coordinator@company.com	Password123!

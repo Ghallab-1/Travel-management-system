@@ -41,8 +41,21 @@ export async function getMyRequests(userId) {
   return all.filter(r => r.userId === userId || r.userId === parseInt(userId));
 }
 
+export async function createRequest(payload) {
+  return request('/api/travelrequests', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function getRequestById(id) {
+  return request(`/api/travelrequests/${encodeURIComponent(id)}`, { method: 'GET' });
+}
+
 export async function getNotifications(userId) {
   return request(`/api/notifications/user/${userId}`, { method: 'GET' });
+}
+
+// Cities
+export async function getCities() {
+  return request('/api/cities', { method: 'GET' });
 }
 
 // Bookings
@@ -112,5 +125,5 @@ export async function deleteDepartment(id){
   return request(`/api/departments/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
-const Api = { login, getTravelRequests, getMyRequests, getNotifications, getBookings, getBookingsByRequest, createBooking, getFlights, createFlight, getHotelReservations, createHotelReservation, getExpenses, getExpensesByRequest, createExpense, approveRequest, rejectRequest, markNotificationRead, getDepartments, createDepartment, updateDepartment, deleteDepartment };
+const Api = { login, getTravelRequests, getPendingForMe, getMyRequests, createRequest, getRequestById, getNotifications, getCities, getBookings, getBookingsByRequest, createBooking, getFlights, createFlight, getHotelReservations, createHotelReservation, getExpenses, getExpensesByRequest, createExpense, approveRequest, rejectRequest, markNotificationRead, getDepartments, createDepartment, updateDepartment, deleteDepartment };
 export default Api;

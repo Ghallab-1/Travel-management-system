@@ -28,6 +28,8 @@ public class TravelRequest
 
     public string Status { get; set; } = string.Empty;
 
+    public int CurrentApprovalLevel { get; set; }    // ADD THIS LINE — the Role.Level required to approve next
+
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
     // Navigation Properties

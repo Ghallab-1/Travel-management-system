@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.svg';
 
 export default function Login({ onLogin }) {
-  const [email, setEmail] = useState('demo@company.com');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export default function Login({ onLogin }) {
       const result = await api.login(email.trim(), password);
       // store token and user
       try { window.localStorage.setItem('tms_token', result.token); } catch (e) {}
-      const user = { id: result.userId, fullName: result.fullName, email: email.trim(), role: result.roleName };
+      const user = { id: result.userId, fullName: result.fullName, email: email.trim(), role: result.roleName, departmentId: result.departmentId };
       onLogin(user);
       try { window.localStorage.setItem('tms_user', JSON.stringify(user)); } catch (e) {}
       navigate('/');

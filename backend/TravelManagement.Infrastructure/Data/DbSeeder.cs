@@ -7,24 +7,25 @@ namespace TravelManagement.Infrastructure.Data
     {
         public static void Seed(AppDbContext db)
         {
-            // Seed roles (idempotent)
-            var desiredRoles = new[]
+            // Seed roles with hierarchy levels (idempotent)
+            var desiredRoles = new (string Name, int Level)[]
             {
-                "Employee",
-                "Direct Manager",
-                "Department Manager",
-                "HR",
-                "Finance",
-                "Travel Coordinator",
-                "Admin"
+                ("Employee", 1),
+                ("Direct Manager", 2),
+                ("Department Manager", 3),
+                ("Travel Coordinator", 4),
+                ("HR", 0),
+                ("Finance", 0),
+                ("Admin", 99)
             };
 
-            foreach (var rn in desiredRoles)
+            foreach (var (name, level) in desiredRoles)
             {
-                if (!db.Roles.Any(r => r.RoleName == rn))
-                {
-                    db.Roles.Add(new Role { RoleName = rn, IsActive = true });
-                }
+                var existing = db.Roles.FirstOrDefault(r => r.RoleName == name);
+                if (existing == null)
+                    db.Roles.Add(new Role { RoleName = name, Level = level, IsActive = true });
+                else
+                    existing.Level = level;
             }
 
             // Seed departments (idempotent)
@@ -39,14 +40,31 @@ namespace TravelManagement.Infrastructure.Data
 
             db.SaveChanges();
 
-            // Ensure demo user exists (idempotent)
-            var demoEmail = "demo@company.com";
+            // Seed countries and cities (idempotent) - required for TravelRequest.DestinationCityId
+            if (!db.Countries.Any())
+            {
+                var usa = new Country { CountryName = "United States", CountryCode = "US" };
+                var uk = new Country { CountryName = "United Kingdom", CountryCode = "GB" };
+                var uae = new Country { CountryName = "United Arab Emirates", CountryCode = "AE" };
+                db.Countries.AddRange(usa, uk, uae);
+                db.SaveChanges();
+
+                db.Cities.AddRange(
+                    new City { CityName = "New York", CountryId = usa.CountryId },
+                    new City { CityName = "San Francisco", CountryId = usa.CountryId },
+                    new City { CityName = "London", CountryId = uk.CountryId },
+                    new City { CityName = "Dubai", CountryId = uae.CountryId }
+                );
+                db.SaveChanges();
+            }
+
+            // Ensure demo user exists (idempotent) - this is your "Direct Manager"
+            var demoEmail = "directmanager@company.com";
             if (!db.Users.Any(u => u.Email.ToLower() == demoEmail))
             {
                 var directManager = db.Roles.FirstOrDefault(r => r.RoleName == "Direct Manager") ?? db.Roles.First();
                 var department = db.Departments.FirstOrDefault() ?? new Department { DepartmentName = "Engineering", IsActive = true };
 
-                // If department was just created in-memory and not tracked, ensure it's saved
                 if (department.Id == 0)
                 {
                     db.Departments.Add(department);
@@ -55,7 +73,7 @@ namespace TravelManagement.Infrastructure.Data
 
                 var demo = new User
                 {
-                    FullName = "Demo Manager",
+                    FullName = "Direct Manager",
                     Email = demoEmail,
                     EmployeeNumber = "E1000",
                     DepartmentId = department.Id,
@@ -67,6 +85,30 @@ namespace TravelManagement.Infrastructure.Data
                 db.Users.Add(demo);
                 db.SaveChanges();
             }
+
+            // Ensure one user per hierarchy level for testing (idempotent)
+            var defaultDept = db.Departments.First();
+
+            void EnsureUser(string fullName, string email, string empNo, string roleName)
+            {
+                if (db.Users.Any(u => u.Email == email)) return;
+                var role = db.Roles.First(r => r.RoleName == roleName);
+                db.Users.Add(new User
+                {
+                    FullName = fullName,
+                    Email = email,
+                    EmployeeNumber = empNo,
+                    DepartmentId = defaultDept.Id,
+                    RoleId = role.Id,
+                    IsActive = true,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123!")
+                });
+            }
+
+            EnsureUser("Employee One", "employee@company.com", "E1001", "Employee");
+            EnsureUser("Department Manager", "deptmanager@company.com", "E1002", "Department Manager");
+            EnsureUser("Travel Coordinator", "coordinator@company.com", "E1003", "Travel Coordinator");
+            db.SaveChanges();
 
             // Seed lookup data: Currencies, ExpenseCategories, Airlines, TravelPolicies (idempotent)
             if (!db.Currencies.Any())
@@ -116,7 +158,3 @@ namespace TravelManagement.Infrastructure.Data
         }
     }
 }
-
-
-
-

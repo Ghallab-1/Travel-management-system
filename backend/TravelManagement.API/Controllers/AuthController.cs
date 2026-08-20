@@ -21,7 +21,7 @@ public class AuthController : ControllerBase
     }
 
     public class LoginRequest { public string Email { get; set; } = string.Empty; public string Password { get; set; } = string.Empty; }
-    public class LoginResponse { public string Token { get; set; } = string.Empty; public int ExpiresIn { get; set; } public int UserId { get; set; } public string FullName { get; set; } = string.Empty; public string RoleName { get; set; } = string.Empty; }
+    public class LoginResponse { public string Token { get; set; } = string.Empty; public int ExpiresIn { get; set; } public int UserId { get; set; } public string FullName { get; set; } = string.Empty; public string RoleName { get; set; } = string.Empty; public int DepartmentId { get; set; } }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
@@ -64,6 +64,6 @@ public class AuthController : ControllerBase
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var tokenString = tokenHandler.WriteToken(token);
 
-        return Ok(new LoginResponse { Token = tokenString, ExpiresIn = 60 * 60 * 8, UserId = user.Id, FullName = user.FullName, RoleName = user.Role?.RoleName ?? string.Empty });
+        return Ok(new LoginResponse { Token = tokenString, ExpiresIn = 60 * 60 * 8, UserId = user.Id, FullName = user.FullName, RoleName = user.Role?.RoleName ?? string.Empty, DepartmentId = user.DepartmentId });
     }
 }

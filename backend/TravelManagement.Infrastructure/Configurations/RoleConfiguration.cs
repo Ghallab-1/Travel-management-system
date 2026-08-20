@@ -19,6 +19,9 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
         builder.Property(r => r.Description)
             .HasMaxLength(500);
 
+        builder.Property(r => r.Level)              // ADD THIS BLOCK
+            .HasDefaultValue(0);
+
         builder.Property(r => r.IsActive)
             .HasDefaultValue(true);
 
