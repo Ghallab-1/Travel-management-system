@@ -11,29 +11,47 @@ export default function MyRequests({ currentUser }) {
   useEffect(() => {
     async function load() {
       setLoading(true);
+
       try {
-        // Try API first
+        // Try the real API first
         const r = await api.getMyRequests(currentUser.id);
         setRequests(r);
       } catch (e) {
-        // Fallback to mock API if backend unreachable
-        const r = await mockApi.getRequestsForUser(currentUser.id);
-        setRequests(r);
+        console.error(e);
+
+        // Fallback to mock API if backend is unreachable
+        try {
+          const r = await mockApi.getRequestsForUser(currentUser.id);
+          setRequests(r);
+        } catch (mockError) {
+          console.error(mockError);
+          setRequests([]);
+        }
       }
+
       setLoading(false);
     }
-    if (currentUser) load();
+
+    if (currentUser) {
+      load();
+    }
   }, [currentUser]);
 
   return (
     <div className="container">
       <h2>My Requests</h2>
+
       {loading ? (
         <p>Loading...</p>
       ) : (
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ textAlign: 'left', borderBottom: '1px solid #ddd' }}>
+            <tr
+              style={{
+                textAlign: 'left',
+                borderBottom: '1px solid #ddd'
+              }}
+            >
               <th>ID</th>
               <th>Destination</th>
               <th>Departure</th>
@@ -41,16 +59,54 @@ export default function MyRequests({ currentUser }) {
               <th></th>
             </tr>
           </thead>
+
           <tbody>
-            {requests.map((r) => (
-              <tr key={r.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                <td>{r.id}</td>
-                <td>{r.destination}</td>
-                <td>{r.departureDate}</td>
-                <td><span className={`badge ${r.status.toLowerCase()}`}>{r.status}</span></td>
-                                <td className="row-actions"><button className="primary" onClick={() => navigate(`/requests/${r.id}`)}>Open</button></td>
-              </tr>
-            ))}
+            {requests.map((r) => {
+              const requestId = r.travelRequestId ?? r.id;
+              const destination =
+                r.destinationCityName ??
+                r.destination ??
+                (r.destinationCityId != null
+                  ? `City ${r.destinationCityId}`
+                  : '—');
+
+              const status = r.status ?? 'Unknown';
+              const departureDate = r.departureDate ?? '—';
+
+              return (
+                <tr
+                  key={requestId}
+                  style={{
+                    borderBottom: '1px solid #f0f0f0'
+                  }}
+                >
+                  <td>{requestId}</td>
+
+                  <td>{destination}</td>
+
+                  <td>{departureDate}</td>
+
+                  <td>
+                    <span
+                      className={`badge ${String(status).toLowerCase()}`}
+                    >
+                      {status}
+                    </span>
+                  </td>
+
+                  <td className="row-actions">
+                    <button
+                      className="primary"
+                      onClick={() =>
+                        navigate(`/requests/${requestId}`)
+                      }
+                    >
+                      Open
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
