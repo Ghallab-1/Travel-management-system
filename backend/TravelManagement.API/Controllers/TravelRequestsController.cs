@@ -19,10 +19,16 @@ namespace TravelManagement.API.Controllers
             _db = db;
         }
 
+        // ============================================================
+        // GET ALL TRAVEL REQUESTS
+        // ============================================================
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var items = await _db.TravelRequests
+                .Include(t => t.User)
+                    .ThenInclude(u => u.Role)
                 .Include(t => t.DestinationCity)
                 .ToListAsync();
 
@@ -30,6 +36,17 @@ namespace TravelManagement.API.Controllers
             {
                 item.TravelRequestId,
                 item.UserId,
+
+                userName =
+                    item.User != null
+                        ? item.User.FullName
+                        : null,
+
+                userRole =
+                    item.User?.Role != null
+                        ? item.User.Role.RoleName
+                        : null,
+
                 item.DepartmentId,
                 item.TravelPolicyId,
                 item.DestinationCityId,
@@ -53,6 +70,11 @@ namespace TravelManagement.API.Controllers
             return Ok(result);
         }
 
+
+        // ============================================================
+        // GET PENDING REQUESTS FOR CURRENT APPROVER
+        // ============================================================
+
         [HttpGet("pending-for-me")]
         [Authorize]
         public async Task<IActionResult> GetPendingForMe()
@@ -66,6 +88,9 @@ namespace TravelManagement.API.Controllers
                 return Ok(new List<TravelRequest>());
 
             var items = await _db.TravelRequests
+                .Include(t => t.User)
+                    .ThenInclude(u => u.Role)
+                .Include(t => t.DestinationCity)
                 .Where(r =>
                     r.CurrentApprovalLevel == role.Level &&
                     r.Status != null &&
@@ -73,13 +98,55 @@ namespace TravelManagement.API.Controllers
                     r.Status.ToLower() != "rejected")
                 .ToListAsync();
 
-            return Ok(items);
+            var result = items.Select(item => new
+            {
+                item.TravelRequestId,
+                item.UserId,
+
+                userName =
+                    item.User != null
+                        ? item.User.FullName
+                        : null,
+
+                userRole =
+                    item.User?.Role != null
+                        ? item.User.Role.RoleName
+                        : null,
+
+                item.DepartmentId,
+                item.TravelPolicyId,
+                item.DestinationCityId,
+
+                destinationCityName =
+                    item.DestinationCity != null
+                        ? item.DestinationCity.CityName
+                        : null,
+
+                item.Purpose,
+                item.Project,
+                item.TravelType,
+                item.DepartureDate,
+                item.ReturnDate,
+                item.EstimatedBudget,
+                item.Status,
+                item.CurrentApprovalLevel,
+                item.CreatedDate
+            });
+
+            return Ok(result);
         }
+
+
+        // ============================================================
+        // GET ONE TRAVEL REQUEST
+        // ============================================================
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> Get(int id)
         {
             var item = await _db.TravelRequests
+                .Include(t => t.User)
+                    .ThenInclude(u => u.Role)
                 .Include(t => t.DestinationCity)
                 .Include(t => t.TravelApprovals)
                     .ThenInclude(a => a.Approver)
@@ -92,6 +159,17 @@ namespace TravelManagement.API.Controllers
             {
                 item.TravelRequestId,
                 item.UserId,
+
+                userName =
+                    item.User != null
+                        ? item.User.FullName
+                        : null,
+
+                userRole =
+                    item.User?.Role != null
+                        ? item.User.Role.RoleName
+                        : null,
+
                 item.DepartmentId,
                 item.TravelPolicyId,
                 item.DestinationCityId,
@@ -117,10 +195,12 @@ namespace TravelManagement.API.Controllers
                     {
                         a.TravelApprovalId,
                         a.ApproverId,
+
                         approverName =
                             a.Approver != null
                                 ? a.Approver.FullName
                                 : null,
+
                         a.ApprovalLevel,
                         a.Decision,
                         a.Comments,
@@ -130,6 +210,11 @@ namespace TravelManagement.API.Controllers
 
             return Ok(result);
         }
+
+
+        // ============================================================
+        // CREATE TRAVEL REQUEST
+        // ============================================================
 
         [HttpPost]
         public async Task<IActionResult> Create(
@@ -160,6 +245,7 @@ namespace TravelManagement.API.Controllers
                 EstimatedBudget = input.EstimatedBudget,
 
                 Status = "Pending",
+
                 CurrentApprovalLevel =
                     (requester.Role?.Level ?? 1) + 1,
 
@@ -174,6 +260,15 @@ namespace TravelManagement.API.Controllers
             {
                 request.TravelRequestId,
                 request.UserId,
+
+                userName =
+                    requester.FullName,
+
+                userRole =
+                    requester.Role != null
+                        ? requester.Role.RoleName
+                        : null,
+
                 request.DepartmentId,
                 request.TravelPolicyId,
                 request.DestinationCityId,
@@ -194,6 +289,11 @@ namespace TravelManagement.API.Controllers
                 result
             );
         }
+
+
+        // ============================================================
+        // UPDATE TRAVEL REQUEST
+        // ============================================================
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(
@@ -216,6 +316,11 @@ namespace TravelManagement.API.Controllers
             return NoContent();
         }
 
+
+        // ============================================================
+        // DELETE TRAVEL REQUEST
+        // ============================================================
+
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -230,6 +335,11 @@ namespace TravelManagement.API.Controllers
 
             return NoContent();
         }
+
+
+        // ============================================================
+        // APPROVE TRAVEL REQUEST
+        // ============================================================
 
         [HttpPost("{id:int}/approve")]
         [Authorize(Policy = "ApproverOnly")]
@@ -308,6 +418,11 @@ namespace TravelManagement.API.Controllers
                 }
             );
         }
+
+
+        // ============================================================
+        // REJECT TRAVEL REQUEST
+        // ============================================================
 
         [HttpPost("{id:int}/reject")]
         [Authorize(Policy = "ApproverOnly")]
