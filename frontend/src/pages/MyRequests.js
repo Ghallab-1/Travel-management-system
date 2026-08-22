@@ -13,16 +13,36 @@ export default function MyRequests({ currentUser }) {
       setLoading(true);
 
       try {
-        // Try the real API first
         const r = await api.getMyRequests(currentUser.id);
-        setRequests(r);
+
+        const sorted = (r || [])
+          .slice()
+          .sort((a, b) => {
+            const aId = Number(a.travelRequestId ?? a.id ?? 0);
+            const bId = Number(b.travelRequestId ?? b.id ?? 0);
+
+            return aId - bId;
+          });
+
+        setRequests(sorted);
       } catch (e) {
         console.error(e);
 
-        // Fallback to mock API if backend is unreachable
         try {
-          const r = await mockApi.getRequestsForUser(currentUser.id);
-          setRequests(r);
+          const r = await mockApi.getRequestsForUser(
+            currentUser.id
+          );
+
+          const sorted = (r || [])
+            .slice()
+            .sort((a, b) => {
+              const aId = Number(a.travelRequestId ?? a.id ?? 0);
+              const bId = Number(b.travelRequestId ?? b.id ?? 0);
+
+              return aId - bId;
+            });
+
+          setRequests(sorted);
         } catch (mockError) {
           console.error(mockError);
           setRequests([]);
@@ -44,7 +64,12 @@ export default function MyRequests({ currentUser }) {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table
+          style={{
+            width: '100%',
+            borderCollapse: 'collapse'
+          }}
+        >
           <thead>
             <tr
               style={{
@@ -61,8 +86,10 @@ export default function MyRequests({ currentUser }) {
           </thead>
 
           <tbody>
-            {requests.map((r) => {
-              const requestId = r.travelRequestId ?? r.id;
+            {requests.map((r, index) => {
+              const requestId =
+                r.travelRequestId ?? r.id;
+
               const destination =
                 r.destinationCityName ??
                 r.destination ??
@@ -70,8 +97,19 @@ export default function MyRequests({ currentUser }) {
                   ? `City ${r.destinationCityId}`
                   : '—');
 
-              const status = r.status ?? 'Unknown';
-              const departureDate = r.departureDate ?? '—';
+              const status =
+                r.status ?? 'Unknown';
+
+              const departureDate =
+                r.departureDate ?? '—';
+
+              /*
+               * Display ID is always sequential:
+               * 1, 2, 3, 4...
+               *
+               * requestId remains the real database ID.
+               */
+              const displayId = index + 1;
 
               return (
                 <tr
@@ -80,7 +118,7 @@ export default function MyRequests({ currentUser }) {
                     borderBottom: '1px solid #f0f0f0'
                   }}
                 >
-                  <td>{requestId}</td>
+                  <td>{displayId}</td>
 
                   <td>{destination}</td>
 
@@ -88,7 +126,9 @@ export default function MyRequests({ currentUser }) {
 
                   <td>
                     <span
-                      className={`badge ${String(status).toLowerCase()}`}
+                      className={`badge ${String(
+                        status
+                      ).toLowerCase()}`}
                     >
                       {status}
                     </span>
@@ -98,7 +138,9 @@ export default function MyRequests({ currentUser }) {
                     <button
                       className="primary"
                       onClick={() =>
-                        navigate(`/requests/${requestId}`)
+                        navigate(
+                          `/requests/${requestId}`
+                        )
                       }
                     >
                       Open

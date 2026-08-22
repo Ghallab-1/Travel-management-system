@@ -15,13 +15,11 @@ export default function Approvals() {
     setError(null);
 
     try {
-      let r = [];
-
-      try {
-        r = await Api.getPendingForMe();
-      } catch (e) {
-        r = await Api.getTravelRequests();
-      }
+      /*
+       * This must use the authenticated
+       * pending-for-me endpoint.
+       */
+      const r = await Api.getPendingForMe();
 
       setItems(r || []);
     } catch (e) {
@@ -37,7 +35,8 @@ export default function Approvals() {
 
   function getCurrentUser() {
     try {
-      const raw = window.localStorage.getItem('tms_user');
+      const raw =
+        window.localStorage.getItem('tms_user');
 
       if (!raw) return null;
 
@@ -52,7 +51,12 @@ export default function Approvals() {
 
     if (!u) return null;
 
-    return u.id || u.userId || u.Id || null;
+    return (
+      u.id ||
+      u.userId ||
+      u.Id ||
+      null
+    );
   }
 
   function isApproverRole() {
@@ -64,7 +68,9 @@ export default function Approvals() {
       u.role ||
       u.roleName ||
       ''
-    ).toString().toLowerCase();
+    )
+      .toString()
+      .toLowerCase();
 
     return (
       role.includes('approver') ||
@@ -86,11 +92,15 @@ export default function Approvals() {
     }
 
     try {
+      /*
+       * Empty comment means the approver
+       * did not provide a comment.
+       */
       await Api.approveRequest(
         id,
         approverId,
-        'Approved from UI',
-        'Direct Manager'
+        '',
+        ''
       );
 
       await load();
@@ -116,11 +126,15 @@ export default function Approvals() {
     }
 
     try {
+      /*
+       * Empty comment means the rejecter
+       * did not provide a comment.
+       */
       await Api.rejectRequest(
         id,
         approverId,
-        'Rejected from UI',
-        'Direct Manager'
+        '',
+        ''
       );
 
       await load();
@@ -154,117 +168,129 @@ export default function Approvals() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Purpose</th>
               <th>User</th>
               <th>Role</th>
+              <th>Purpose</th>
               <th>Status</th>
               <th></th>
             </tr>
           </thead>
 
           <tbody>
-            {items.map(i => (
-              <tr
-                key={
+            {items
+              .slice()
+              .sort(
+                (a, b) =>
+                  Number(
+                    a.travelRequestId ||
+                      a.TravelRequestId ||
+                      a.id
+                  ) -
+                  Number(
+                    b.travelRequestId ||
+                      b.TravelRequestId ||
+                      b.id
+                  )
+              )
+              .map((i, index) => {
+                const requestId =
                   i.travelRequestId ||
                   i.TravelRequestId ||
-                  i.id
-                }
-              >
-                {/* ID */}
-                <td>
-                  {i.travelRequestId ||
-                    i.TravelRequestId ||
-                    i.id}
-                </td>
+                  i.id;
 
-                {/* Purpose */}
-                <td>
-                  {i.purpose ||
-                    i.Purpose ||
-                    i.destination ||
-                    '-'}
-                </td>
+                const displayId = index + 1;
 
-                {/* User Name */}
-                <td>
-                  {i.userName ||
-                    i.UserName ||
-                    i.fullName ||
-                    i.FullName ||
-                    '-'}
-                </td>
+                const status =
+                  (i.status || 'Draft').toLowerCase();
 
-                {/* User Role */}
-                <td>
-                  {i.roleName ||
-                    i.RoleName ||
-                    i.userRole ||
-                    i.UserRole ||
-                    i.role ||
-                    i.Role ||
-                    '-'}
-                </td>
+                const userName =
+                  i.userName ||
+                  i.UserName ||
+                  i.fullName ||
+                  i.FullName ||
+                  '-';
 
-                {/* Status */}
-                <td>
-                  <span
-                    className={`badge ${(i.status || '').toLowerCase()}`}
-                  >
-                    {i.status || 'Draft'}
-                  </span>
-                </td>
+                const userRole =
+                  i.userRole ||
+                  i.UserRole ||
+                  i.roleName ||
+                  i.RoleName ||
+                  i.role ||
+                  i.Role ||
+                  '-';
 
-                {/* Actions */}
-                <td>
-                  {(i.status || '').toLowerCase() !== 'approved' &&
-                  (i.status || '').toLowerCase() !== 'rejected' ? (
-                    isApproverRole() ? (
-                      <>
-                        <button
-                          className="primary"
-                          onClick={() =>
-                            handleApprove(
-                              i.travelRequestId ||
-                              i.TravelRequestId ||
-                              i.id
-                            )
-                          }
-                          style={{ marginRight: 8 }}
-                        >
-                          Approve
-                        </button>
+                return (
+                  <tr key={requestId}>
+                    <td>{displayId}</td>
 
-                        <button
-                          onClick={() =>
-                            handleReject(
-                              i.travelRequestId ||
-                              i.TravelRequestId ||
-                              i.id
-                            )
-                          }
-                          style={{
-                            background: '#eee',
-                            border: '1px solid #ddd',
-                            padding: '6px 8px'
-                          }}
-                        >
-                          Reject
-                        </button>
-                      </>
-                    ) : (
-                      <span className="small-muted">
-                        Pending
+                    <td>{userName}</td>
+
+                    <td>{userRole}</td>
+
+                    <td>
+                      {i.purpose ||
+                        i.Purpose ||
+                        i.destination ||
+                        '-'}
+                    </td>
+
+                    <td>
+                      <span
+                        className={`badge ${status}`}
+                      >
+                        {i.status || 'Draft'}
                       </span>
-                    )
-                  ) : (
-                    <span className="small-muted">
-                      Done
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
+                    </td>
+
+                    <td>
+                      {status !== 'approved' &&
+                      status !== 'rejected' ? (
+                        isApproverRole() ? (
+                          <>
+                            <button
+                              className="primary"
+                              onClick={() =>
+                                handleApprove(
+                                  requestId
+                                )
+                              }
+                              style={{
+                                marginRight: 8
+                              }}
+                            >
+                              Approve
+                            </button>
+
+                            <button
+                              onClick={() =>
+                                handleReject(
+                                  requestId
+                                )
+                              }
+                              style={{
+                                background: '#eee',
+                                border:
+                                  '1px solid #ddd',
+                                padding: '6px 8px'
+                              }}
+                            >
+                              Reject
+                            </button>
+                          </>
+                        ) : (
+                          <span className="small-muted">
+                            Pending
+                          </span>
+                        )
+                      ) : (
+                        <span className="small-muted">
+                          Done
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       )}
