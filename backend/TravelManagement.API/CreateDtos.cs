@@ -50,4 +50,19 @@ namespace TravelManagement.API.Models
         public string? Description { get; set; }
         public DateOnly ExpenseDate { get; set; }
     }
+
+    public class UpdateCoordinatorDetailsDto
+    {
+        public decimal EstimatedBudget { get; set; }
+        public int CoordinatorId { get; set; }
+        public string? CoordinatorNotes { get; set; }
+    }
+
+    public class UpdatePerDiemDto
+    {
+        public int HrUserId { get; set; }
+        public decimal PerDiemAmount { get; set; }
+        public string Decision { get; set; } = "Approved";
+        public string? Comments { get; set; }
+    }
 }

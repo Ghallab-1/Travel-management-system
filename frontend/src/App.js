@@ -56,7 +56,7 @@ function App() {
       <div className="bg-blob-2" />
       <BrowserRouter>
         <div style={{ display: 'flex', minHeight: '100vh' }}>
-          <Sidebar />
+          <Sidebar currentUser={currentUser} />
           <div style={{ flex: 1 }}>
             <NavBar currentUser={currentUser} onLogout={handleLogout} />
             <main>

@@ -22,9 +22,7 @@ export default function Reports() {
         setRequests(requestData || []);
       } catch (e) {
         console.error(e);
-        setError(
-          'Failed to load report data. Ensure the API is running.'
-        );
+        setError('Failed to load report data. Ensure the API is running.');
       } finally {
         setLoading(false);
       }
@@ -33,15 +31,10 @@ export default function Reports() {
     loadReports();
   }, []);
 
-  const getValue = (obj, camel, pascal) =>
-    obj?.[camel] ?? obj?.[pascal];
+  const getValue = (obj, camel, pascal) => obj?.[camel] ?? obj?.[pascal];
 
   const totalSpending = expenses.reduce((sum, expense) => {
-    const amount = Number(
-      getValue(expense, 'amount', 'Amount') || 0
-    );
-
-    return sum + amount;
+    return sum + Number(getValue(expense, 'amount', 'Amount') || 0);
   }, 0);
 
   const currentMonth = new Date().getMonth();
@@ -49,48 +42,42 @@ export default function Reports() {
 
   const monthlySpending = expenses
     .filter((expense) => {
-      const dateValue = getValue(
-        expense,
-        'expenseDate',
-        'ExpenseDate'
-      );
-
+      const dateValue = getValue(expense, 'expenseDate', 'ExpenseDate');
       if (!dateValue) return false;
 
       const date = new Date(dateValue);
 
-      return (
-        date.getMonth() === currentMonth &&
-        date.getFullYear() === currentYear
-      );
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     })
     .reduce((sum, expense) => {
-      return (
-        sum +
-        Number(
-          getValue(expense, 'amount', 'Amount') || 0
-        )
-      );
+      return sum + Number(getValue(expense, 'amount', 'Amount') || 0);
     }, 0);
+
+  const spendingByMonth = expenses.reduce((acc, expense) => {
+    const dateValue = getValue(expense, 'expenseDate', 'ExpenseDate');
+    if (!dateValue) return acc;
+
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return acc;
+
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    acc[key] = (acc[key] || 0) + Number(getValue(expense, 'amount', 'Amount') || 0);
+
+    return acc;
+  }, {});
+
+  const monthlyRows = Object.entries(spendingByMonth)
+    .sort((a, b) => b[0].localeCompare(a[0]));
 
   const destinationCounts = {};
 
   requests.forEach((request) => {
     const destination =
-      getValue(
-        request,
-        'destinationCityName',
-        'DestinationCityName'
-      ) ||
-      getValue(
-        request,
-        'destination',
-        'Destination'
-      ) ||
+      getValue(request, 'destinationCityName', 'DestinationCityName') ||
+      getValue(request, 'destination', 'Destination') ||
       'Unknown';
 
-    destinationCounts[destination] =
-      (destinationCounts[destination] || 0) + 1;
+    destinationCounts[destination] = (destinationCounts[destination] || 0) + 1;
   });
 
   const topDestinations = Object.entries(destinationCounts)
@@ -110,11 +97,7 @@ export default function Reports() {
     <div className="container">
       <h2>Reports</h2>
 
-      {error && (
-        <p style={{ color: 'red' }}>
-          {error}
-        </p>
-      )}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <div
         style={{
@@ -140,16 +123,12 @@ export default function Reports() {
 
         <div className="card">
           <h3>Total Expenses</h3>
-          <p style={{ fontSize: 24, fontWeight: 700 }}>
-            {expenses.length}
-          </p>
+          <p style={{ fontSize: 24, fontWeight: 700 }}>{expenses.length}</p>
         </div>
 
         <div className="card">
           <h3>Total Requests</h3>
-          <p style={{ fontSize: 24, fontWeight: 700 }}>
-            {requests.length}
-          </p>
+          <p style={{ fontSize: 24, fontWeight: 700 }}>{requests.length}</p>
         </div>
       </div>
 
@@ -164,15 +143,31 @@ export default function Reports() {
           <h3>Monthly Spending</h3>
 
           <p>
-            Current month spending:{' '}
-            <strong>
-              {monthlySpending.toFixed(2)}
-            </strong>
+            Current month spending: <strong>{monthlySpending.toFixed(2)}</strong>
           </p>
 
           <p className="small-muted">
-            Calculated from real expense records in the database.
+            Calculated by summing expense amounts whose Expense Date falls inside the current calendar month.
           </p>
+
+          {monthlyRows.length > 0 && (
+            <table>
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Spending</th>
+                </tr>
+              </thead>
+              <tbody>
+                {monthlyRows.map(([month, amount]) => (
+                  <tr key={month}>
+                    <td>{month}</td>
+                    <td>{amount.toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <div className="card">
@@ -184,8 +179,7 @@ export default function Reports() {
             <ol>
               {topDestinations.map(([destination, count]) => (
                 <li key={destination}>
-                  {destination} — {count} request
-                  {count !== 1 ? 's' : ''}
+                  {destination} - {count} request{count !== 1 ? 's' : ''}
                 </li>
               ))}
             </ol>

@@ -21,4 +21,12 @@ public class CreateTravelRequestDto
     public DateOnly ReturnDate { get; set; }
 
     public decimal EstimatedBudget { get; set; }
+
+    public string? RequiredDocumentNotes { get; set; }
+
+    public string? RequiredDocumentFileName { get; set; }
+
+    public string? RequiredDocumentFileContentType { get; set; }
+
+    public string? RequiredDocumentFileBase64 { get; set; }
 }

@@ -19,7 +19,14 @@ export default function Login({ onLogin }) {
       const result = await api.login(email.trim(), password);
       // store token and user
       try { window.localStorage.setItem('tms_token', result.token); } catch (e) {}
-      const user = { id: result.userId, fullName: result.fullName, email: email.trim(), role: result.roleName, departmentId: result.departmentId };
+      const user = {
+        id: result.userId,
+        fullName: result.fullName,
+        email: email.trim(),
+        role: result.roleName,
+        roleName: result.roleName,
+        departmentId: result.departmentId
+      };
       onLogin(user);
       try { window.localStorage.setItem('tms_user', JSON.stringify(user)); } catch (e) {}
       navigate('/');

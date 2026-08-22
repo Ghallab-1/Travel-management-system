@@ -45,7 +45,9 @@ builder.Services.AddAuthentication(options =>
 // Authorization
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("ApproverOnly", policy => policy.RequireRole("Direct Manager", "Department Manager", "Admin", "Travel Coordinator"));
+    options.AddPolicy("ApproverOnly", policy => policy.RequireRole("Direct Manager", "Department Manager", "Admin"));
+    options.AddPolicy("CoordinatorOnly", policy => policy.RequireRole("Travel Coordinator", "Admin"));
+    options.AddPolicy("HrOnly", policy => policy.RequireRole("HR", "Admin"));
 });
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

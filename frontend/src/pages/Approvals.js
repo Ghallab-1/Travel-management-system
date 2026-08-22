@@ -1,13 +1,43 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Api from '../services/api';
+
+function getCurrentUser() {
+  try {
+    const raw = window.localStorage.getItem('tms_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function getRole(user) {
+  return (user?.roleName || user?.role || '').toLowerCase();
+}
+
+function getApproverId(user) {
+  return user?.id || user?.userId || user?.UserId || null;
+}
+
+function missing(label) {
+  return <span style={{ color: '#b3261e' }}>{label} missing from API</span>;
+}
 
 export default function Approvals() {
   const [items, setItems] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
+  const navigate = useNavigate();
+
+  const currentUser = getCurrentUser();
+  const role = getRole(currentUser);
+  const isCoordinator = role.includes('travel coordinator');
+  const isHr = role === 'hr';
+  const isManager = role.includes('manager');
 
   React.useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function load() {
@@ -15,151 +45,82 @@ export default function Approvals() {
     setError(null);
 
     try {
-      /*
-       * This must use the authenticated
-       * pending-for-me endpoint.
-       */
-      const r = await Api.getPendingForMe();
+      let data;
 
-      setItems(r || []);
+      if (isCoordinator) {
+        data = await Api.getCoordinatorWork();
+      } else if (isHr) {
+        data = await Api.getHrReviewRequests();
+      } else {
+        data = await Api.getPendingForMe();
+      }
+
+      setItems(data || []);
     } catch (e) {
       console.error(e);
-
-      setError(
-        'Failed to load requests. Ensure the API is running and you are logged in.'
-      );
+      setError('Failed to load this work queue. Ensure the API is running and your role is correct.');
     }
 
     setLoading(false);
   }
 
-  function getCurrentUser() {
-    try {
-      const raw =
-        window.localStorage.getItem('tms_user');
-
-      if (!raw) return null;
-
-      return JSON.parse(raw);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function getApproverId() {
-    const u = getCurrentUser();
-
-    if (!u) return null;
-
-    return (
-      u.id ||
-      u.userId ||
-      u.Id ||
-      null
+  function getOptionalComment(decision) {
+    const comment = window.prompt(
+      `${decision} this request.\n\nOptional comment (leave empty if you do not want to add one):`
     );
-  }
 
-  function isApproverRole() {
-    const u = getCurrentUser();
-
-    if (!u) return false;
-
-    const role = (
-      u.role ||
-      u.roleName ||
-      ''
-    )
-      .toString()
-      .toLowerCase();
-
-    return (
-      role.includes('approver') ||
-      role.includes('manager') ||
-      role.includes('admin')
-    );
+    return comment === null ? '' : comment.trim();
   }
 
   async function handleApprove(id) {
     setError(null);
 
-    const approverId = getApproverId();
-
+    const approverId = getApproverId(currentUser);
     if (!approverId) {
-      setError(
-        'You must be logged in as an approver to perform this action.'
-      );
+      setError('You must be logged in as an approver to perform this action.');
       return;
     }
 
     try {
-      /*
-       * Empty comment means the approver
-       * did not provide a comment.
-       */
-      await Api.approveRequest(
-        id,
-        approverId,
-        '',
-        ''
-      );
-
+      await Api.approveRequest(id, approverId, getOptionalComment('Approve'), '');
       await load();
     } catch (e) {
       console.error(e);
-
-      setError(
-        'Failed to approve request. Check console for details.'
-      );
+      setError(e.message || 'Failed to approve request.');
     }
   }
 
   async function handleReject(id) {
     setError(null);
 
-    const approverId = getApproverId();
-
+    const approverId = getApproverId(currentUser);
     if (!approverId) {
-      setError(
-        'You must be logged in as an approver to perform this action.'
-      );
+      setError('You must be logged in as an approver to perform this action.');
       return;
     }
 
     try {
-      /*
-       * Empty comment means the rejecter
-       * did not provide a comment.
-       */
-      await Api.rejectRequest(
-        id,
-        approverId,
-        '',
-        ''
-      );
-
+      await Api.rejectRequest(id, approverId, getOptionalComment('Reject'), '');
       await load();
     } catch (e) {
       console.error(e);
-
-      setError(
-        'Failed to reject request. Check console for details.'
-      );
+      setError(e.message || 'Failed to reject request.');
     }
   }
 
+  const title = isCoordinator ? 'Coordination' : isHr ? 'HR Review' : 'Approvals';
+  const subtitle = isCoordinator
+    ? 'Manager decisions and requests ready for bookings, hotels, and expenses'
+    : isHr
+      ? 'Manager decisions and per diem review'
+      : 'Requests awaiting your approval';
+
   return (
     <div className="container">
-      <h2>Approvals</h2>
+      <h2>{title}</h2>
+      <p className="small-muted">{subtitle}</p>
 
-      <p className="small-muted">
-        Requests awaiting approval
-      </p>
-
-      {error && (
-        <p style={{ color: 'red' }}>
-          {error}
-        </p>
-      )}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
 
       {loading ? (
         <p>Loading...</p>
@@ -181,111 +142,49 @@ export default function Approvals() {
               .slice()
               .sort(
                 (a, b) =>
-                  Number(
-                    a.travelRequestId ||
-                      a.TravelRequestId ||
-                      a.id
-                  ) -
-                  Number(
-                    b.travelRequestId ||
-                      b.TravelRequestId ||
-                      b.id
-                  )
+                  Number(a.travelRequestId || a.TravelRequestId || a.id || 0) -
+                  Number(b.travelRequestId || b.TravelRequestId || b.id || 0)
               )
-              .map((i, index) => {
-                const requestId =
-                  i.travelRequestId ||
-                  i.TravelRequestId ||
-                  i.id;
-
-                const displayId = index + 1;
-
-                const status =
-                  (i.status || 'Draft').toLowerCase();
-
-                const userName =
-                  i.userName ||
-                  i.UserName ||
-                  i.fullName ||
-                  i.FullName ||
-                  '-';
-
-                const userRole =
-                  i.userRole ||
-                  i.UserRole ||
-                  i.roleName ||
-                  i.RoleName ||
-                  i.role ||
-                  i.Role ||
-                  '-';
+              .map((item, index) => {
+                const requestId = item.travelRequestId || item.TravelRequestId || item.id;
+                const status = String(item.status || '').toLowerCase();
+                const canApprove = isManager && status === 'pending';
 
                 return (
                   <tr key={requestId}>
-                    <td>{displayId}</td>
-
-                    <td>{userName}</td>
-
-                    <td>{userRole}</td>
-
+                    <td>{index + 1}</td>
+                    <td>{item.userName || item.UserName || missing('User')}</td>
+                    <td>{item.userRole || item.UserRole || missing('Role')}</td>
+                    <td>{item.purpose || item.Purpose || ''}</td>
                     <td>
-                      {i.purpose ||
-                        i.Purpose ||
-                        i.destination ||
-                        '-'}
+                      <span className={`badge ${status}`}>{item.status || ''}</span>
                     </td>
-
                     <td>
-                      <span
-                        className={`badge ${status}`}
-                      >
-                        {i.status || 'Draft'}
-                      </span>
-                    </td>
+                      {canApprove ? (
+                        <>
+                          <button
+                            className="primary"
+                            onClick={() => handleApprove(requestId)}
+                            style={{ marginRight: 8 }}
+                          >
+                            Approve
+                          </button>
 
-                    <td>
-                      {status !== 'approved' &&
-                      status !== 'rejected' ? (
-                        isApproverRole() ? (
-                          <>
-                            <button
-                              className="primary"
-                              onClick={() =>
-                                handleApprove(
-                                  requestId
-                                )
-                              }
-                              style={{
-                                marginRight: 8
-                              }}
-                            >
-                              Approve
-                            </button>
-
-                            <button
-                              onClick={() =>
-                                handleReject(
-                                  requestId
-                                )
-                              }
-                              style={{
-                                background: '#eee',
-                                border:
-                                  '1px solid #ddd',
-                                padding: '6px 8px'
-                              }}
-                            >
-                              Reject
-                            </button>
-                          </>
-                        ) : (
-                          <span className="small-muted">
-                            Pending
-                          </span>
-                        )
+                          <button
+                            onClick={() => handleReject(requestId)}
+                            style={{
+                              background: '#eee',
+                              border: '1px solid #ddd',
+                              padding: '6px 8px',
+                            }}
+                          >
+                            Reject
+                          </button>
+                        </>
                       ) : (
-                        <span className="small-muted">
-                          Done
-                        </span>
+                        <button className="primary" onClick={() => navigate(`/requests/${requestId}`)}>
+                          Open
+                        </button>
                       )}
                     </td>
                   </tr>

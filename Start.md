@@ -9,11 +9,11 @@ docker compose up -d --build
 Start-Sleep -Seconds 20
 
 ## Check backend health:
-Invoke-RestMethod -Uri http://localhost:5000/health
+Invoke-RestMethod -Uri http://localhost:5044/health
 
 ## Test login:
 $body = @{ email = "employee@company.com"; password = "Password123!" } | ConvertTo-Json
-$resp = Invoke-RestMethod -Method Post -Uri http://localhost:5000/api/auth/login -ContentType "application/json" -Body $body
+$resp = Invoke-RestMethod -Method Post -Uri http://localhost:5044/api/auth/login -ContentType "application/json" -Body $body
 $resp.token
 
 
@@ -30,3 +30,5 @@ Direct Manager	directmanager@company.com	Password123!
 Department Manager	deptmanager@company.com	Password123!
 
 Travel Coordinator	coordinator@company.com	Password123!
+
+HR	hr@company.com	Password123!

@@ -4,7 +4,6 @@ public class TravelRequest
 {
     public int TravelRequestId { get; set; }
 
-    // Foreign Keys
     public int UserId { get; set; }
 
     public int DepartmentId { get; set; }
@@ -13,7 +12,6 @@ public class TravelRequest
 
     public int DestinationCityId { get; set; }
 
-    // Travel Information
     public string Purpose { get; set; } = string.Empty;
 
     public string Project { get; set; } = string.Empty;
@@ -26,13 +24,36 @@ public class TravelRequest
 
     public decimal EstimatedBudget { get; set; }
 
+    public int? EstimatedBudgetSetById { get; set; }
+
+    public DateTime? EstimatedBudgetSetDate { get; set; }
+
     public string Status { get; set; } = string.Empty;
 
-    public int CurrentApprovalLevel { get; set; }    // ADD THIS LINE — the Role.Level required to approve next
+    public int CurrentApprovalLevel { get; set; }
 
     public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
-    // Navigation Properties
+    public string? RequiredDocumentNotes { get; set; }
+
+    public string? RequiredDocumentFileName { get; set; }
+
+    public string? RequiredDocumentFileContentType { get; set; }
+
+    public string? RequiredDocumentFileBase64 { get; set; }
+
+    public string? CoordinatorNotes { get; set; }
+
+    public decimal? PerDiemAmount { get; set; }
+
+    public string PerDiemStatus { get; set; } = "Not Submitted";
+
+    public int? PerDiemApprovedById { get; set; }
+
+    public string? PerDiemComments { get; set; }
+
+    public DateTime? PerDiemDecisionDate { get; set; }
+
     public User User { get; set; } = null!;
 
     public Department Department { get; set; } = null!;
@@ -40,6 +61,10 @@ public class TravelRequest
     public TravelPolicy TravelPolicy { get; set; } = null!;
 
     public City DestinationCity { get; set; } = null!;
+
+    public User? EstimatedBudgetSetBy { get; set; }
+
+    public User? PerDiemApprovedBy { get; set; }
 
     public ICollection<TravelApproval> TravelApprovals { get; set; } = new List<TravelApproval>();
 

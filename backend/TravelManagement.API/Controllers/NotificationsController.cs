@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TravelManagement.Infrastructure.Data;
-using TravelManagement.Domain.Entities;
 
 namespace TravelManagement.API.Controllers
 {
@@ -10,12 +9,30 @@ namespace TravelManagement.API.Controllers
     public class NotificationsController : ControllerBase
     {
         private readonly AppDbContext _db;
-        public NotificationsController(AppDbContext db) => _db = db;
+
+        public NotificationsController(AppDbContext db)
+        {
+            _db = db;
+        }
 
         [HttpGet("user/{userId:int}")]
         public async Task<IActionResult> GetForUser(int userId)
         {
-            var items = await _db.Notifications.Where(n => n.UserId == userId).ToListAsync();
+            var items = await _db.Notifications
+                .Where(n => n.UserId == userId)
+                .OrderByDescending(n => n.CreatedDate)
+                .Select(n => new
+                {
+                    n.NotificationId,
+                    n.UserId,
+                    n.Title,
+                    n.Message,
+                    n.NotificationType,
+                    n.IsRead,
+                    n.CreatedDate
+                })
+                .ToListAsync();
+
             return Ok(items);
         }
 
@@ -23,10 +40,14 @@ namespace TravelManagement.API.Controllers
         public async Task<IActionResult> MarkRead(int id)
         {
             var item = await _db.Notifications.FindAsync(id);
-            if (item == null) return NotFound();
+            if (item == null)
+            {
+                return NotFound();
+            }
+
             item.IsRead = true;
-            _db.Entry(item).State = EntityState.Modified;
             await _db.SaveChangesAsync();
+
             return NoContent();
         }
     }
